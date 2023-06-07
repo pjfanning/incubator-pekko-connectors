@@ -19,8 +19,8 @@ import pekko.annotation.InternalApi
 import pekko.stream.Materializer
 import pekko.stream.connectors.google.RequestSettings
 import com.typesafe.config.Config
-import spray.json.DefaultJsonProtocol._
-import spray.json.{ JsonParser, RootJsonFormat }
+import io.circe._
+import io.circe.generic.semiauto._
 
 import java.time.Clock
 import scala.concurrent.Future
@@ -60,8 +60,8 @@ private[connectors] object UserAccessCredentials {
       client_secret: String,
       refresh_token: String,
       quota_project_id: String)
-  implicit val userAccessCredentialsFormat: RootJsonFormat[UserAccessCredentialsFile] = jsonFormat4(
-    UserAccessCredentialsFile.apply)
+  implicit val userAccessCredentialsDecoder: Decoder[UserAccessCredentialsFile] = deriveDecoder[UserAccessCredentialsFile]
+  implicit val userAccessCredentialsEncoder: Encoder[UserAccessCredentialsFile] = deriveEncoder[UserAccessCredentialsFile]
 }
 
 @InternalApi

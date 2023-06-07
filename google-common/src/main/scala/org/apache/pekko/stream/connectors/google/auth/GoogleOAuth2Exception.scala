@@ -14,13 +14,13 @@
 package org.apache.pekko.stream.connectors.google.auth
 
 import org.apache.pekko
-import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import pekko.http.scaladsl.model.{ ErrorInfo, ExceptionWithErrorInfo, HttpResponse }
 import pekko.http.scaladsl.unmarshalling.{ FromResponseUnmarshaller, PredefinedFromEntityUnmarshallers, Unmarshaller }
 import pekko.stream.connectors.google.implicits._
 import pekko.stream.connectors.google.util.Retry
-import spray.json.DefaultJsonProtocol._
-import spray.json.RootJsonFormat
+
+import io.circe._
+import io.circe.generic.semiauto._
 
 final case class GoogleOAuth2Exception private (override val info: ErrorInfo) extends ExceptionWithErrorInfo(info)
 
@@ -28,16 +28,17 @@ private[google] object GoogleOAuth2Exception {
 
   private val internalFailure = "internal_failure"
   private final case class OAuth2ErrorResponse(error: Option[String], error_description: Option[String])
-  private implicit val oAuth2ErrorResponseFormat: RootJsonFormat[OAuth2ErrorResponse] =
-    jsonFormat2(OAuth2ErrorResponse.apply)
+  private implicit val oAuth2ErrorResponseDecoder: Decoder[OAuth2ErrorResponse] = deriveDecoder[OAuth2ErrorResponse]
+  private implicit val oAuth2ErrorResponseEncoder: Encoder[OAuth2ErrorResponse] = deriveEncoder[OAuth2ErrorResponse]
 
+  import com.github.pjfanning.pekkohttpcirce.FailFastCirceSupport._
   implicit val unmarshaller: FromResponseUnmarshaller[Throwable] =
     Unmarshaller
       .identityUnmarshaller[HttpResponse]
       .map(_.entity)
       .andThen(
         Unmarshaller.firstOf(
-          sprayJsonUnmarshaller[OAuth2ErrorResponse],
+          unmarshaller[OAuth2ErrorResponse],
           PredefinedFromEntityUnmarshallers.stringUnmarshaller.map(s => OAuth2ErrorResponse(None, Some(s)))))
       .mapWithInput {
         case (response, OAuth2ErrorResponse(error, error_description)) =>

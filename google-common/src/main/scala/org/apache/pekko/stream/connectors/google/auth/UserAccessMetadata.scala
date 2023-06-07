@@ -17,7 +17,6 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.http.scaladsl.Http
-import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import pekko.http.scaladsl.model.HttpMethods.POST
 import pekko.http.scaladsl.model.headers.RawHeader
 import pekko.http.scaladsl.model.{ FormData, HttpRequest }
@@ -44,7 +43,7 @@ private[auth] object UserAccessMetadata {
   def getAccessToken(clientId: String, clientSecret: String, refreshToken: String)(
       implicit mat: Materializer,
       clock: Clock): Future[AccessToken] = {
-    import SprayJsonSupport._
+    import com.github.pjfanning.pekkohttpcirce.FailFastCirceSupport._
     import mat.executionContext
     implicit val system: ActorSystem = mat.system
     for {

@@ -17,7 +17,8 @@ import org.apache.pekko
 import pekko.annotation.InternalApi
 import pekko.http.scaladsl.unmarshalling.Unmarshaller
 import pdi.jwt.JwtTime
-import spray.json.RootJsonFormat
+import io.circe._
+import io.circe.generic.semiauto._
 
 import java.time.Clock
 import scala.concurrent.duration._
@@ -43,6 +44,6 @@ private[auth] final case class AccessTokenResponse(access_token: String, token_t
 
 @InternalApi
 private[auth] object AccessTokenResponse {
-  import spray.json.DefaultJsonProtocol._
-  implicit val format: RootJsonFormat[AccessTokenResponse] = jsonFormat3(AccessTokenResponse.apply)
+  implicit val accessTokenResponseDecoder: Decoder[AccessTokenResponse] = deriveDecoder[AccessTokenResponse]
+  implicit val accessTokenResponseEncoder: Encoder[AccessTokenResponse] = deriveEncoder[AccessTokenResponse]
 }

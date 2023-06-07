@@ -17,7 +17,6 @@ import org.apache.pekko
 import pekko.actor.ActorSystem
 import pekko.annotation.InternalApi
 import pekko.http.scaladsl.Http
-import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import pekko.http.scaladsl.model.HttpMethods.GET
 import pekko.http.scaladsl.model.HttpRequest
 import pekko.http.scaladsl.model.headers.RawHeader
@@ -41,7 +40,7 @@ private[auth] object GoogleComputeMetadata {
   def getAccessToken()(
       implicit mat: Materializer,
       clock: Clock): Future[AccessToken] = {
-    import SprayJsonSupport._
+    import com.github.pjfanning.pekkohttpcirce.FailFastCirceSupport._
     import mat.executionContext
     implicit val system: ActorSystem = mat.system
     for {

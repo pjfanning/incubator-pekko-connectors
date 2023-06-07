@@ -200,8 +200,9 @@ object Dependencies {
     crossScalaVersions -= Scala3,
     libraryDependencies ++= Seq(
       "org.apache.pekko" %% "pekko-http" % PekkoHttpVersion,
-      "org.apache.pekko" %% "pekko-http-spray-json" % PekkoHttpVersion,
-      "com.github.jwt-scala" %% "jwt-spray-json" % "7.1.4", // ApacheV2
+      "com.github.pjfanning" %% "pekko-http-circe" % "1.40.0-RC3_23-bb29e2a9-SNAPSHOT", // ApacheV2
+      "com.github.jwt-scala" %% "jwt-circe" % "8.0.3", // ApacheV2
+      "io.circe" %% "circe-generic" % "0.14.1",
       "com.google.auth" % "google-auth-library-credentials" % "0.24.1", // BSD 3-clause
       "io.specto" % "hoverfly-java" % hoverflyVersion % Test // ApacheV2
     ) ++ Mockito)

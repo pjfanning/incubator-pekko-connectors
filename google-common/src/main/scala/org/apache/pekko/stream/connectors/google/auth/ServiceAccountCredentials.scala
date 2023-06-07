@@ -20,12 +20,14 @@ import pekko.stream.Materializer
 import pekko.stream.connectors.google.RequestSettings
 import pekko.util.ccompat.JavaConverters._
 import com.typesafe.config.Config
-import spray.json.DefaultJsonProtocol._
-import spray.json.{ JsonParser, RootJsonFormat }
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.jawn.decode
 
 import java.time.Clock
 import scala.concurrent.Future
 import scala.io.Source
+import scala.util.{Failure, Success}
 
 @InternalApi
 private[connectors] object ServiceAccountCredentials {
@@ -43,9 +45,13 @@ private[connectors] object ServiceAccountCredentials {
           c.getString("private-key"))
       } else {
         val src = Source.fromFile(c.getString("path"))
-        val credentials = JsonParser(src.mkString).convertTo[ServiceAccountCredentialsFile]
+        val credentialsResult = decode[ServiceAccountCredentialsFile](src.mkString).toTry
         src.close()
-        (credentials.project_id, credentials.client_email, credentials.private_key)
+        credentialsResult match {
+          case Success(credentials) =>
+            (credentials.project_id, credentials.client_email, credentials.private_key)
+          case Failure(e) => throw e
+        }
       }
     }
     val scopes = c.getStringList("scopes").asScala.toSeq
@@ -56,8 +62,8 @@ private[connectors] object ServiceAccountCredentials {
   }
 
   final case class ServiceAccountCredentialsFile(project_id: String, client_email: String, private_key: String)
-  implicit val serviceAccountCredentialsFormat: RootJsonFormat[ServiceAccountCredentialsFile] = jsonFormat3(
-    ServiceAccountCredentialsFile.apply)
+  implicit val serviceAccountCredentialsEncoder: Decoder[ServiceAccountCredentialsFile] = deriveDecoder[ServiceAccountCredentialsFile]
+  implicit val serviceAccountCredentialsEncoder: Encoder[ServiceAccountCredentialsFile] = deriveEncoder[ServiceAccountCredentialsFile]
 }
 
 @InternalApi
