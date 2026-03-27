@@ -160,6 +160,45 @@ class ArchiveSpec
           }
         // #zip-reader
       }
+
+      "unarchive multiple files" in {
+        val file1Content = ByteString("content1")
+        val file2Content = ByteString("content2")
+        val file3Content = ByteString("content3")
+
+        val filesStream = Source(
+          List(
+            (ArchiveMetadata("file1.txt"), Source.single(file1Content)),
+            (ArchiveMetadata("file2.txt"), Source.single(file2Content)),
+            (ArchiveMetadata("file3.txt"), Source.single(file3Content))))
+
+        val pekkoZipped: Future[ByteString] =
+          filesStream
+            .via(Archive.zip())
+            .runWith(Sink.fold(ByteString.empty)(_ ++ _))
+
+        val zipFile = File.createTempFile("pekko-connectors-zip-test", ".zip")
+        zipFile.deleteOnExit()
+
+        Source.future(pekkoZipped).runWith(FileIO.toPath(zipFile.toPath)).futureValue
+
+        val result = Archive
+          .zipReader(zipFile)
+          .mapAsync(1) {
+            case (metadata, source) =>
+              source.runWith(Sink.fold(ByteString.empty)(_ ++ _)).map { bs =>
+                metadata.name -> bs
+              }
+          }
+          .runWith(Sink.seq)
+          .futureValue
+          .toMap
+
+        result should have size 3
+        result("file1.txt") shouldBe file1Content
+        result("file2.txt") shouldBe file2Content
+        result("file3.txt") shouldBe file3Content
+      }
     }
   }
 
