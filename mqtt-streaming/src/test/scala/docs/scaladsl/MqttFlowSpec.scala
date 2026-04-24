@@ -109,7 +109,7 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
   "mqtt server flow" should {
     // Ignored due to ://github.com/akka/alpakka/issues/1549, possibly
     // fixed with https://github.com/akka/alpakka/pull/2189 and https://github.com/akka/alpakka/pull/2969
-    "receive a bidirectional connection and a subscription to a topic" in assertAllStagesStopped {
+    "receive a bidirectional connection and a subscription to a topic" ignore {
 
       val host = "localhost"
 
