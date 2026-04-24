@@ -199,8 +199,8 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
 
   "mqtt client" should {
     Seq(SubscribeQoSFlags.QoSAtMostOnceDelivery,
-        SubscribeQoSFlags.QoSAtLeastOnceDelivery,
-        SubscribeQoSFlags.QoSExactlyOnceDelivery).foreach { qos =>
+      SubscribeQoSFlags.QoSAtLeastOnceDelivery,
+      SubscribeQoSFlags.QoSExactlyOnceDelivery).foreach { qos =>
       s"subscribe at QoS ${qos.underlying.toString} level" in assertAllStagesStopped {
         val id = qos.underlying.toString
 

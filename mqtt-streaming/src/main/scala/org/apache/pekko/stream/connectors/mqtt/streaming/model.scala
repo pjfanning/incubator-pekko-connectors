@@ -1000,7 +1000,7 @@ object MqttCodec {
         val topicFilters = decodeTopicFilters(l - (packetLen - v.len), Vector.empty)
         val topicFiltersValid = topicFilters.nonEmpty && topicFilters.foldLeft(true) {
           case (true, (Right(_), tff)) if tff.underlying < SubscribeQoSFlags.QoSReserved.underlying => true
-          case _                                                                                     => false
+          case _                                                                                    => false
         }
         if (topicFiltersValid) {
           Right(Subscribe(packetId,
