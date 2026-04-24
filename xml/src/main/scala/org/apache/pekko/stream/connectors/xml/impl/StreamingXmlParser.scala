@@ -130,10 +130,10 @@ private[xml] object StreamingXmlParser {
               push(
                 out,
                 transform.buildOutput(StartElement(parser.getLocalName,
-                    attributes,
-                    optPrefix.filterNot(_ == ""),
-                    optNs.filterNot(_ == ""),
-                    namespaceCtx = namespaces),
+                  attributes,
+                  optPrefix.filterNot(_ == ""),
+                  optNs.filterNot(_ == ""),
+                  namespaceCtx = namespaces),
                   context))
 
             case XMLStreamConstants.END_ELEMENT =>
