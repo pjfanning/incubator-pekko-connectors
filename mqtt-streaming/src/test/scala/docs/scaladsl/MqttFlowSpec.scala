@@ -221,7 +221,7 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
         commands.offer(Command(Subscribe(Seq(s"topic$id" -> qos))))
 
         events.futureValue match {
-          case SubAck(_, returnCodes) => returnCodes.head.contains(qos)
+          case SubAck(_, returnCodes) => returnCodes.head.contains(qos) shouldBe true
         }
       }
     }
