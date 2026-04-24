@@ -89,7 +89,7 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
       commands.offer(Command(Connect(clientId, ConnectFlags.CleanSession)))
       commands.offer(Command(Subscribe(topic)))
       session ! Command(
-        Publish(ControlPacketFlags.RETAIN | ControlPacketFlags.QoSAtLeastOnceDelivery, topic, ByteString("ohi")))
+        Publish(ControlPacketFlags.RETAIN | PublishQoSFlags.QoSAtLeastOnceDelivery, topic, ByteString("ohi")))
       // #run-streaming-flow
 
       events.futureValue match {
@@ -108,8 +108,8 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
 
   "mqtt server flow" should {
     // Ignored due to ://github.com/akka/alpakka/issues/1549, possibly
-    // fixed with https://github.com/akka/alpakka/pull/2189
-    "receive a bidirectional connection and a subscription to a topic" ignore {
+    // fixed with https://github.com/akka/alpakka/pull/2189 and https://github.com/akka/alpakka/pull/2969
+    "receive a bidirectional connection and a subscription to a topic" in assertAllStagesStopped {
 
       val host = "localhost"
 
@@ -181,7 +181,7 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
       commands.offer(Command(Connect(clientId, ConnectFlags.None)))
       commands.offer(Command(Subscribe(topic)))
       clientSession ! Command(
-        Publish(ControlPacketFlags.RETAIN | ControlPacketFlags.QoSAtLeastOnceDelivery, topic, ByteString("ohi")))
+        Publish(ControlPacketFlags.RETAIN | PublishQoSFlags.QoSAtLeastOnceDelivery, topic, ByteString("ohi")))
 
       events.futureValue match {
         case Publish(_, `topic`, _, bytes) => bytes shouldBe ByteString("ohi")
@@ -194,6 +194,36 @@ abstract class MqttFlowSpecBase(clientId: String, topic: String, system: ActorSy
       session.shutdown()
       // #run-streaming-bind-flow
       commands.watchCompletion().foreach(_ => clientSession.shutdown())
+    }
+  }
+
+  "mqtt client" should {
+    Seq(SubscribeQoSFlags.QoSAtMostOnceDelivery,
+      SubscribeQoSFlags.QoSAtLeastOnceDelivery,
+      SubscribeQoSFlags.QoSExactlyOnceDelivery).foreach { qos =>
+      s"subscribe at QoS ${qos.underlying.toString} level" in assertAllStagesStopped {
+        val id = qos.underlying.toString
+
+        val settings = MqttSessionSettings()
+        val session = ActorMqttClientSession(settings)
+        val conn = Tcp().outgoingConnection("localhost", 1883)
+        val mqttFlow = Mqtt.clientSessionFlow(session, ByteString(id)).join(conn)
+        val (commands, events) = Source
+          .queue(10, OverflowStrategy.fail)
+          .via(mqttFlow)
+          .collect {
+            case Right(Event(p: SubAck, _)) => p
+          }
+          .toMat(Sink.head)(Keep.both)
+          .run()
+
+        commands.offer(Command(Connect(id, ConnectFlags.CleanSession)))
+        commands.offer(Command(Subscribe(Seq(s"topic$id" -> qos))))
+
+        events.futureValue match {
+          case SubAck(_, returnCodes) => returnCodes.head.contains(qos) shouldBe true
+        }
+      }
     }
   }
 }
