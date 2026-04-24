@@ -81,7 +81,7 @@ object XmlParsing {
     xml.scaladsl.XmlParsing.parserWithContext(ignoreInvalidChars, configureFactory.accept(_)).asJava
 
   /**
-   * A Flow that transforms a stream of XML ParseEvents. This stage coalesces consequitive CData and Characters
+   * A Flow that transforms a stream of XML ParseEvents. This stage coalesces consecutive CData and Characters
    * events into a single Characters event or fails if the buffered string is larger than the maximum defined.
    */
   def coalesce(maximumTextLength: Int): pekko.stream.javadsl.Flow[ParseEvent, ParseEvent, NotUsed] =
