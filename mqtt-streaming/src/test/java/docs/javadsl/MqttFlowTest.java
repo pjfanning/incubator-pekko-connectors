@@ -35,6 +35,7 @@ import org.apache.pekko.stream.connectors.mqtt.streaming.Event;
 import org.apache.pekko.stream.connectors.mqtt.streaming.MqttSessionSettings;
 import org.apache.pekko.stream.connectors.mqtt.streaming.PubAck;
 import org.apache.pekko.stream.connectors.mqtt.streaming.Publish;
+import org.apache.pekko.stream.connectors.mqtt.streaming.PublishQoSFlags;
 import org.apache.pekko.stream.connectors.mqtt.streaming.SubAck;
 import org.apache.pekko.stream.connectors.mqtt.streaming.Subscribe;
 import org.apache.pekko.stream.connectors.mqtt.streaming.javadsl.ActorMqttClientSession;
@@ -137,7 +138,7 @@ public class MqttFlowTest {
     session.tell(
         new Command<>(
             new Publish(
-                ControlPacketFlags.RETAIN() | ControlPacketFlags.QoSAtLeastOnceDelivery(),
+                ControlPacketFlags.RETAIN() | PublishQoSFlags.QoSAtLeastOnceDelivery(),
                 topic,
                 ByteString.fromString("ohi"))));
     // #run-streaming-flow
@@ -278,7 +279,7 @@ public class MqttFlowTest {
     clientSession.tell(
         new Command<>(
             new Publish(
-                ControlPacketFlags.RETAIN() | ControlPacketFlags.QoSAtLeastOnceDelivery(),
+                ControlPacketFlags.RETAIN() | PublishQoSFlags.QoSAtLeastOnceDelivery(),
                 topic,
                 ByteString.fromString("ohi"))));
 

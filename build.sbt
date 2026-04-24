@@ -329,7 +329,27 @@ lazy val mqttv5 = pekkoConnectorProject("mqttv5", "mqttv5", Dependencies.MqttV5)
 
 lazy val mqttStreaming =
   pekkoConnectorProject("mqtt-streaming", "mqttStreaming", Dependencies.MqttStreaming,
-    MetaInfLicenseNoticeCopy.mqttStreamingSettings)
+    MetaInfLicenseNoticeCopy.mqttStreamingSettings,
+    // Values removed to fix different QoS encoding in MQTT streaming Publish and Subscribe
+    // https://github.com/akka/alpakka/pull/2969
+    mimaBinaryIssueFilters ++= {
+      import com.typesafe.tools.mima.core._
+      Seq(
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.QoSFailure"),
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.QoSReserved"),
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.QoSExactlyOnceDelivery"),
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.QoSAtLeastOnceDelivery"),
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.QoSAtMostOnceDelivery"),
+        // Wrong decoding of UnsubAck
+        // https://github.com/akka/alpakka/issues/2963 (PR https://github.com/akka/alpakka/pull/2971)
+        ProblemFilters.exclude[DirectMissingMethodProblem](
+          "org.apache.pekko.stream.connectors.mqtt.streaming.ControlPacketFlags.ReservedUnsubAck"))
+    })
 
 lazy val mqttStreamingBench = internalProject("mqtt-streaming-bench")
   .enablePlugins(JmhPlugin)
