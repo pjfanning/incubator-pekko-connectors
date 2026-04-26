@@ -83,7 +83,7 @@ private[xml] object StreamingXmlParser {
         val a = grab(in)
         val bs = transform.getByteString(a)
         context = transform.getContext(a)
-        val array = bs.toArray
+        val array = bs.toArrayUnsafe()
         parser.getInputFeeder.feedInput(array, 0, array.length)
         advanceParser()
       }
