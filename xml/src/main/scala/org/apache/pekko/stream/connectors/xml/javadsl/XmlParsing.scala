@@ -34,10 +34,26 @@ object XmlParsing {
     xml.scaladsl.XmlParsing.parser.asJava
 
   /**
+   * Parser Flow that takes a stream of ByteStrings and parses them to XML events similar to SAX while keeping
+   * a context attached.
+   */
+  def parserWithContext[Ctx](): pekko.stream.javadsl.FlowWithContext[ByteString, Ctx, ParseEvent, Ctx, NotUsed] =
+    xml.scaladsl.XmlParsing.parserWithContext().asJava
+
+  /**
    * Parser Flow that takes a stream of ByteStrings and parses them to XML events similar to SAX.
    */
   def parser(ignoreInvalidChars: Boolean): pekko.stream.javadsl.Flow[ByteString, ParseEvent, NotUsed] =
     xml.scaladsl.XmlParsing.parser(ignoreInvalidChars).asJava
+
+  /**
+   * Parser Flow that takes a stream of ByteStrings and parses them to XML events similar to SAX while keeping
+   * a context attached.
+   */
+  def parserWithContext[Ctx](
+      ignoreInvalidChars: Boolean
+  ): pekko.stream.javadsl.FlowWithContext[ByteString, Ctx, ParseEvent, Ctx, NotUsed] =
+    xml.scaladsl.XmlParsing.parserWithContext(ignoreInvalidChars).asJava
 
   /**
    * Parser Flow that takes a stream of ByteStrings and parses them to XML events similar to SAX.
@@ -55,7 +71,17 @@ object XmlParsing {
     xml.scaladsl.XmlParsing.parser(ignoreInvalidChars, configureFactory.accept(_)).asJava
 
   /**
-   * A Flow that transforms a stream of XML ParseEvents. This stage coalesces consequitive CData and Characters
+   * Parser Flow that takes a stream of ByteStrings and parses them to XML events similar to SAX while keeping
+   * a context attached.
+   */
+  def parserWithContext[Ctx](
+      ignoreInvalidChars: Boolean,
+      configureFactory: Consumer[AsyncXMLInputFactory]
+  ): pekko.stream.javadsl.FlowWithContext[ByteString, Ctx, ParseEvent, Ctx, NotUsed] =
+    xml.scaladsl.XmlParsing.parserWithContext(ignoreInvalidChars, configureFactory.accept(_)).asJava
+
+  /**
+   * A Flow that transforms a stream of XML ParseEvents. This stage coalesces consecutive CData and Characters
    * events into a single Characters event or fails if the buffered string is larger than the maximum defined.
    */
   def coalesce(maximumTextLength: Int): pekko.stream.javadsl.Flow[ParseEvent, ParseEvent, NotUsed] =
