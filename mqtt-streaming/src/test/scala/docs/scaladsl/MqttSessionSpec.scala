@@ -86,7 +86,7 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val publish = Publish("some-topic", ByteString("some-payload"))
@@ -172,7 +172,7 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       client.offer(Command(connect))
@@ -442,10 +442,10 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtMostOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSAtMostOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, None).result()
 
       client.offer(Command(connect))
@@ -492,10 +492,10 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
       val pubAck = PubAck(PacketId(1))
       val pubAckBytes = pubAck.encode(ByteString.newBuilder).result()
@@ -553,10 +553,10 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
       val pubAck = PubAck(PacketId(1))
       val pubAckBytes = pubAck.encode(ByteString.newBuilder).result()
@@ -630,13 +630,13 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribe1Bytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck1 = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck1 = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAck1Bytes = subAck1.encode(ByteString.newBuilder).result()
       val subscribe2Bytes = subscribe.encode(ByteString.newBuilder, PacketId(2)).result()
-      val subAck2 = SubAck(PacketId(2), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck2 = SubAck(PacketId(2), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAck2Bytes = subAck2.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSAtLeastOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
       val pubAck = PubAck(PacketId(1))
 
@@ -702,7 +702,7 @@ class MqttSessionSpec
       val connAck = ConnAck(ConnAckFlags.None, ConnAckReturnCode.ConnectionAccepted)
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtLeastOnceDelivery | ControlPacketFlags.DUP,
+      val publish = Publish(PublishQoSFlags.QoSAtLeastOnceDelivery | ControlPacketFlags.DUP,
         "some-topic",
         ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
@@ -754,10 +754,10 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSExactlyOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSExactlyOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
       val pubRec = PubRec(PacketId(1))
       val pubRecBytes = pubRec.encode(ByteString.newBuilder).result()
@@ -813,7 +813,7 @@ class MqttSessionSpec
       val connAck = ConnAck(ConnAckFlags.None, ConnAckReturnCode.ConnectionAccepted)
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSAtMostOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSAtMostOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, None).result()
 
       client.offer(Command(connect))
@@ -865,6 +865,55 @@ class MqttSessionSpec
 
       server.expectMsg(publishBytes)
       server.reply(pubAckBytes)
+
+      result.futureValue shouldBe Right(Event(pubAck, Some(carry)))
+      client.complete()
+      client.watchCompletion().foreach(_ => session.shutdown())
+    }
+
+    "publish with QoS 1 and ignore a spurious PubRec, completing on PubAck" in assertAllStagesStopped {
+      val session = ActorMqttClientSession(settings)
+
+      val server = TestProbe()
+      val pipeToServer = Flow[ByteString].mapAsync(1)(msg => server.ref.ask(msg).mapTo[ByteString])
+
+      val (client, result) =
+        Source
+          .queue(1, OverflowStrategy.fail)
+          .via(
+            Mqtt
+              .clientSessionFlow[String](session, ByteString("1"))
+              .join(pipeToServer))
+          .drop(1)
+          .toMat(Sink.head)(Keep.both)
+          .run()
+
+      val connect = Connect("some-client-id", ConnectFlags.None)
+      val connectBytes = connect.encode(ByteString.newBuilder).result()
+      val connAck = ConnAck(ConnAckFlags.None, ConnAckReturnCode.ConnectionAccepted)
+      val connAckBytes = connAck.encode(ByteString.newBuilder).result()
+
+      val publish = Publish("some-topic", ByteString("some-payload"))
+      val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
+      val carry = "some-carry"
+      // A spurious PubRec for a QoS 1 publish must be ignored; only PubAck should complete it.
+      val pubRec = PubRec(PacketId(1))
+      val pubRecBytes = pubRec.encode(ByteString.newBuilder).result()
+      val pubAck = PubAck(PacketId(1))
+      val pubAckBytes = pubAck.encode(ByteString.newBuilder).result()
+
+      client.offer(Command(connect))
+
+      server.expectMsg(connectBytes)
+      server.reply(connAckBytes)
+
+      session ! Command(publish, carry)
+
+      server.expectMsg(publishBytes)
+      // Reply with spurious PubRec immediately followed by the correct PubAck in the same byte stream.
+      // The MQTT framer splits these into two frames: PubRec is ignored (QoS 1 doesn't use PUBREC),
+      // and PubAck correctly completes the QoS 1 publish.
+      server.reply(pubRecBytes ++ pubAckBytes)
 
       result.futureValue shouldBe Right(Event(pubAck, Some(carry)))
       client.complete()
@@ -1059,7 +1108,7 @@ class MqttSessionSpec
       val connAck = ConnAck(ConnAckFlags.None, ConnAckReturnCode.ConnectionAccepted)
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
-      val publish = Publish(ControlPacketFlags.QoSExactlyOnceDelivery, "some-topic", ByteString("some-payload"))
+      val publish = Publish(PublishQoSFlags.QoSExactlyOnceDelivery, "some-topic", ByteString("some-payload"))
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
       val carry = "some-carry"
       val pubRec = PubRec(PacketId(1))
@@ -1200,7 +1249,7 @@ class MqttSessionSpec
 
       val subscribe = Subscribe("some-topic")
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val unsubscribe = Unsubscribe("some-topic")
@@ -1328,7 +1377,7 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
@@ -1426,11 +1475,11 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribe1Bytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val sub1Ack = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val sub1Ack = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val sub1AckBytes = sub1Ack.encode(ByteString.newBuilder).result()
 
       val subscribe2Bytes = subscribe.encode(ByteString.newBuilder, PacketId(2)).result()
-      val sub2Ack = SubAck(PacketId(2), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val sub2Ack = SubAck(PacketId(2), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val sub2AckBytes = sub2Ack.encode(ByteString.newBuilder).result()
 
       fromClientQueue.offer(connectBytes)
@@ -1503,7 +1552,7 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val publish = Publish("some-topic", ByteString("some-payload"))
@@ -1771,7 +1820,7 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val disconnectBytes = disconnect.encode(ByteString.newBuilder).result()
@@ -1980,7 +2029,7 @@ class MqttSessionSpec
       val connAckBytes = connAck.encode(ByteString.newBuilder).result()
 
       val subscribeBytes = subscribe.encode(ByteString.newBuilder, PacketId(1)).result()
-      val subAck = SubAck(PacketId(1), List(ControlPacketFlags.QoSAtLeastOnceDelivery))
+      val subAck = SubAck(PacketId(1), List(SubscribeQoSFlags.QoSAtLeastOnceDelivery))
       val subAckBytes = subAck.encode(ByteString.newBuilder).result()
 
       val publish = Publish("some-topic", ByteString("some-payload"))

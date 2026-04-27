@@ -486,10 +486,14 @@ import scala.util.{ Failure, Success }
                   data.settings)))
             subscribed.future.foreach(_ => context.self ! Subscribed(subscribe))(context.executionContext)
             clientConnected(data)
-          case (_, Subscribed(subscribe)) =>
-            clientConnected(
-              data.copy(
-                publishers = data.publishers ++ subscribe.topicFilters.map(_._1)))
+          case (context, Subscribed(subscribe)) =>
+            val newPublishers = data.publishers ++ subscribe.topicFilters.map(_._1)
+            val (toProcess, remaining) = data.pendingLocalPublications.partition { case (topic, _) =>
+              !data.publishers.exists(Topics.filter(_, topic)) &&
+              newPublishers.exists(Topics.filter(_, topic))
+            }
+            toProcess.foreach { case (_, prl) => context.self ! prl }
+            clientConnected(data.copy(publishers = newPublishers, pendingLocalPublications = remaining))
           case (context, UnsubscribeReceivedFromRemote(unsubscribe, local)) =>
             val unsubscribed = Promise[Done]()
             context.watch(
@@ -505,7 +509,7 @@ import scala.util.{ Failure, Success }
           case (_, Unsubscribed(unsubscribe)) =>
             clientConnected(data.copy(publishers = data.publishers -- unsubscribe.topicFilters))
           case (_, PublishReceivedFromRemote(publish, local))
-              if (publish.flags & ControlPacketFlags.QoSReserved).underlying == 0 =>
+              if (publish.flags & PublishQoSFlags.QoSReserved).underlying == 0 =>
             local.success(Consumer.ForwardPublish)
             clientConnected(data)
           case (context, prfr @ PublishReceivedFromRemote(publish @ Publish(_, topicName, Some(packetId), _), local)) =>
@@ -552,7 +556,7 @@ import scala.util.{ Failure, Success }
               clientConnected(data.copy(activeConsumers = data.activeConsumers - topicName))
             }
           case (context, PublishReceivedLocally(publish, _))
-              if (publish.flags & ControlPacketFlags.QoSReserved).underlying == 0 &&
+              if (publish.flags & PublishQoSFlags.QoSReserved).underlying == 0 &&
               data.publishers.exists(Topics.filter(_, publish.topicName)) =>
             QueueOfferState.waitForQueueOfferCompleted(
               data.remote
@@ -579,6 +583,12 @@ import scala.util.{ Failure, Success }
               clientConnected(
                 data.copy(pendingLocalPublications = data.pendingLocalPublications :+ (publish.topicName -> prl)))
             }
+          case (_, prl @ PublishReceivedLocally(publish, _))
+              if data.pendingLocalPublications.size < data.settings.serverSendBufferSize =>
+            // Topic not yet subscribed - stash until subscription arrives via Subscribed event.
+            // Bounded by serverSendBufferSize to prevent unbounded growth; excess publishes are dropped.
+            clientConnected(
+              data.copy(pendingLocalPublications = data.pendingLocalPublications :+ (publish.topicName -> prl)))
           case (context, ProducerFree(topicName)) =>
             val i = data.pendingLocalPublications.indexWhere(_._1 == topicName)
             if (i >= 0) {
