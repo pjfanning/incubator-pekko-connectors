@@ -583,8 +583,10 @@ import scala.util.{ Failure, Success }
               clientConnected(
                 data.copy(pendingLocalPublications = data.pendingLocalPublications :+ (publish.topicName -> prl)))
             }
-          case (_, prl @ PublishReceivedLocally(publish, _)) =>
-            // Topic not yet subscribed - stash until subscription arrives via Subscribed event
+          case (_, prl @ PublishReceivedLocally(publish, _))
+              if data.pendingLocalPublications.size < data.settings.serverSendBufferSize =>
+            // Topic not yet subscribed - stash until subscription arrives via Subscribed event.
+            // Bounded by serverSendBufferSize to prevent unbounded growth; excess publishes are dropped.
             clientConnected(
               data.copy(pendingLocalPublications = data.pendingLocalPublications :+ (publish.topicName -> prl)))
           case (context, ProducerFree(topicName)) =>
