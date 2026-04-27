@@ -163,7 +163,7 @@ import scala.util.{ Either, Failure, Success }
             Behaviors.stopped
 
           case (_, PubRecReceivedFromRemote(local))
-              if data.publish.flags.contains(PublishQoSFlags.QoSAtMostOnceDelivery) =>
+              if data.publish.flags.contains(PublishQoSFlags.QoSExactlyOnceDelivery) =>
             local.success(ForwardPubRec(data.publishData))
             timer.cancel(ReceivePubackrec)
             publishAcknowledged(data)

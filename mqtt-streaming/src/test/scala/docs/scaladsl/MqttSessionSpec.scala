@@ -871,6 +871,55 @@ class MqttSessionSpec
       client.watchCompletion().foreach(_ => session.shutdown())
     }
 
+    "publish with QoS 1 and ignore a spurious PubRec, completing on PubAck" in assertAllStagesStopped {
+      val session = ActorMqttClientSession(settings)
+
+      val server = TestProbe()
+      val pipeToServer = Flow[ByteString].mapAsync(1)(msg => server.ref.ask(msg).mapTo[ByteString])
+
+      val (client, result) =
+        Source
+          .queue(1, OverflowStrategy.fail)
+          .via(
+            Mqtt
+              .clientSessionFlow[String](session, ByteString("1"))
+              .join(pipeToServer))
+          .drop(1)
+          .toMat(Sink.head)(Keep.both)
+          .run()
+
+      val connect = Connect("some-client-id", ConnectFlags.None)
+      val connectBytes = connect.encode(ByteString.newBuilder).result()
+      val connAck = ConnAck(ConnAckFlags.None, ConnAckReturnCode.ConnectionAccepted)
+      val connAckBytes = connAck.encode(ByteString.newBuilder).result()
+
+      val publish = Publish("some-topic", ByteString("some-payload"))
+      val publishBytes = publish.encode(ByteString.newBuilder, Some(PacketId(1))).result()
+      val carry = "some-carry"
+      // A spurious PubRec for a QoS 1 publish must be ignored; only PubAck should complete it.
+      val pubRec = PubRec(PacketId(1))
+      val pubRecBytes = pubRec.encode(ByteString.newBuilder).result()
+      val pubAck = PubAck(PacketId(1))
+      val pubAckBytes = pubAck.encode(ByteString.newBuilder).result()
+
+      client.offer(Command(connect))
+
+      server.expectMsg(connectBytes)
+      server.reply(connAckBytes)
+
+      session ! Command(publish, carry)
+
+      server.expectMsg(publishBytes)
+      // Reply with spurious PubRec immediately followed by the correct PubAck in the same byte stream.
+      // The MQTT framer splits these into two frames: PubRec is ignored (QoS 1 doesn't use PUBREC),
+      // and PubAck correctly completes the QoS 1 publish.
+      server.reply(pubRecBytes ++ pubAckBytes)
+
+      result.futureValue shouldBe Right(Event(pubAck, Some(carry)))
+      client.complete()
+      client.watchCompletion().foreach(_ => session.shutdown())
+    }
+
     "publish twice with a QoS of 1 so that the second is queued" in assertAllStagesStopped {
       val session = ActorMqttClientSession(settings)
 
